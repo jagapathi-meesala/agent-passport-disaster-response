@@ -13,7 +13,7 @@ A portable, framework-agnostic AI agent architecture designed for disaster respo
 
 ---
 
-## Step 11: End-to-End Integration & Competition Demo
+## Competition Demonstration & Evidence Stack
 
 The project includes a complete competition-ready demonstration stack:
 
@@ -34,6 +34,16 @@ The project includes a complete competition-ready demonstration stack:
 
 ---
 
+## Execution Status Classification & Provider Neutrality
+
+The execution engine uses explicit status classification without fabricating data:
+
+- **`COMPLETED` (`status: "completed"`)**: Operational tool executed successfully with valid provider configuration, returning real/mocked provider response metrics.
+- **`AWAITING_TOOLS` (`status: "awaiting_tools"`)**: Returned when external provider URL configuration is required (e.g., `WEATHER_SERVICE_URL` or `RESOURCE_SERVICE_URL` not set in runtime environment) or when required operational tools are not registered. Prevents inventing fake disaster responses.
+- **`FAILED` (`status: "failed"`)**: Returned when an unauthorized capability is requested or execution fails validation/authorization checks.
+
+---
+
 ## Directory Overview
 
 - `core/`: Framework-independent core execution engine (`agent.py`), state model (`state.py`), and context (`execution.py`).
@@ -51,18 +61,14 @@ The project includes a complete competition-ready demonstration stack:
 
 ---
 
-## Getting Started & Usage
-
-### Prerequisites
-- Python 3.10+
-- `.venv` virtual environment
+## Judge Guide: Commands & Evidence Inspection
 
 ### 1. Running the Standalone Competition Demo (`run_demo.py`)
 Run the CLI demonstration runner:
 ```bash
 .venv/bin/python3 run_demo.py
 ```
-*Outputs structured JSON evidence for all 7 lifecycle stages with exit code 0.*
+*Executes all 7 lifecycle stages and outputs structured evidence with exit code 0.*
 
 ### 2. Running All Automated Unit & E2E Tests
 Run the complete test suite (175 tests):
@@ -70,9 +76,16 @@ Run the complete test suite (175 tests):
 .venv/bin/python3 -m unittest discover -s tests -p "test_*.py"
 ```
 
-### 3. Running the REST API & Demo Dashboard
-Start the API server:
+### 3. Running the REST API & Web Dashboard
+Start the API server on port 8001:
 ```bash
 .venv/bin/uvicorn api.main:app --reload --port 8001
 ```
-Open `frontend/index.html` in any web browser to interact with the Live Demo Dashboard.
+Open `frontend/index.html` in any browser or open via VS Code Live Server / local server at `http://127.0.0.1:5500`.
+
+### 4. Machine-Readable Evidence Files to Inspect
+Judges can verify output JSON artifacts:
+- **Passport Credential**: `config/passport.json` or `curl http://127.0.0.1:8001/passport`
+- **Tool Contracts**: `curl http://127.0.0.1:8001/tools`
+- **Passport Trust Report**: `curl -X POST http://127.0.0.1:8001/verify/trust`
+- **Portability Equivalence Report**: `curl -X POST http://127.0.0.1:8001/verify/portability`
