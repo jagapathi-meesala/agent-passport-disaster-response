@@ -33,7 +33,7 @@ class TestE2EIntegration(unittest.TestCase):
         payload = {
             "request_id": "req-e2e-1",
             "user_input": "Check weather",
-            "context": {"location": "RegionA"},
+            "context": {"location": {"latitude": 15.5, "longitude": 75.5}},
             "requested_capabilities": ["weather_monitoring"],
             "adapter_type": "direct_core"
         }
@@ -41,34 +41,34 @@ class TestE2EIntegration(unittest.TestCase):
         self.assertEqual(response.status_code, 200)
         data = response.json()
         self.assertIn("status", data)
-        self.assertEqual(data["status"], "completed")
+        self.assertEqual(data["status"], "awaiting_tools")
         self.assertEqual(data["request_id"], "req-e2e-1")
 
     def test_execute_portable_adapter(self):
         payload = {
             "request_id": "req-e2e-2",
             "user_input": "Find shelters",
-            "context": {"location": "RegionB", "resource_type": "shelter"},
+            "context": {"location": {"latitude": 15.5, "longitude": 75.5}, "resource_type": "shelter"},
             "requested_capabilities": ["resource_location"],
             "adapter_type": "portable"
         }
         response = self.client.post("/execute", json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "completed")
+        self.assertEqual(data["status"], "awaiting_tools")
 
     def test_execute_langchain_adapter(self):
         payload = {
             "request_id": "req-e2e-3",
             "user_input": "Check weather via LangChain",
-            "context": {"location": "RegionC"},
+            "context": {"location": {"latitude": 15.5, "longitude": 75.5}},
             "requested_capabilities": ["weather_monitoring"],
             "adapter_type": "langchain"
         }
         response = self.client.post("/execute", json=payload)
         self.assertEqual(response.status_code, 200)
         data = response.json()
-        self.assertEqual(data["status"], "completed")
+        self.assertEqual(data["status"], "awaiting_tools")
 
     def test_unauthorized_capability_rejection(self):
         payload = {

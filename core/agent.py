@@ -187,6 +187,26 @@ class AgentCore(AbstractDisasterResponseAgent):
                         state.record_error(err.get("error_code", "TOOL_ERROR"), err.get("message", "Tool execution error"), err)
 
             state.selected_tools = executed_tools
+
+            # Evaluate execution outcome when no operational tools succeeded
+            if len(executed_tools) == 0 and len(executable_tools) > 0:
+                has_unconfigured = any(e.error_code == "PROVIDER_NOT_CONFIGURED" for e in state.errors)
+                target_status = AgentStatus.AWAITING_TOOLS if has_unconfigured else AgentStatus.FAILED
+                state.transition_to(target_status)
+                exec_metadata = exec_ctx.finish()
+                return AgentResponse(
+                    request_id=request.request_id,
+                    status=target_status,
+                    result={
+                        "message": "External provider configuration is required for tool execution." if has_unconfigured else "Tool execution failed.",
+                        "attempted_tools": [t.contract.name for t in executable_tools]
+                    },
+                    used_capabilities=state.selected_capabilities,
+                    used_tools=[],
+                    execution_metadata=exec_metadata,
+                    errors=state.errors
+                )
+
             state.final_result = {
                 "summary": "Core task evaluation processed.",
                 "tool_outputs": state.tool_results

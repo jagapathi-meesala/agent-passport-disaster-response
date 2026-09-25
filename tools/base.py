@@ -158,11 +158,15 @@ class ToolRegistry:
         try:
             output = tool.execute(params)
         except Exception as e:
+            err_msg = str(e)
+            is_unconfigured = "not configured" in err_msg.lower() or "configuration" in err_msg.lower() or "unconfigured" in err_msg.lower()
+            err_code = "PROVIDER_NOT_CONFIGURED" if is_unconfigured else "TOOL_EXECUTION_FAILURE"
+            status = ToolExecutionStatus.UNAVAILABLE if is_unconfigured else ToolExecutionStatus.EXECUTION_ERROR
             return ToolExecutionResult(
                 tool_id=contract.tool_id,
-                status=ToolExecutionStatus.EXECUTION_ERROR,
+                status=status,
                 result=None,
-                errors=[{"error_code": "TOOL_EXECUTION_FAILURE", "message": f"Runtime error executing tool '{contract.tool_id}': {str(e)}"}]
+                errors=[{"error_code": err_code, "message": f"Runtime error executing tool '{contract.tool_id}': {err_msg}"}]
             )
 
         # Output Validation Check

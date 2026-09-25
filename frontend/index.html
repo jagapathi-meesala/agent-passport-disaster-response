@@ -188,7 +188,8 @@
 
                 <button onclick="executeTask()">Run Task Execution</button>
 
-                <pre id="execution-output" style="margin-top: 1rem;">Execution response will appear here...</pre>
+                <div id="execution-status-badge" style="margin-top: 1rem; font-weight: 600; font-size: 0.85rem;"></div>
+                <pre id="execution-output" style="margin-top: 0.5rem;">Execution response will appear here...</pre>
             </div>
 
             <div class="card">
@@ -248,7 +249,9 @@
             const adapter = document.getElementById("adapter-select").value;
             const input = document.getElementById("input-text").value;
             const capability = document.getElementById("capability-select").value;
+            const badge = document.getElementById("execution-status-badge");
 
+            badge.innerHTML = '<span style="color: #94a3b8;">STATUS: Processing task execution...</span>';
             document.getElementById("execution-output").innerText = "Processing task execution...";
 
             const payload = {
@@ -265,8 +268,20 @@
                     body: JSON.stringify(payload)
                 });
                 const data = await res.json();
+
+                if (data.status === "completed") {
+                    badge.innerHTML = '<span style="color: #34d399;">✓ STATUS: COMPLETED (Successful Operational Tool Execution)</span>';
+                } else if (data.status === "awaiting_tools") {
+                    badge.innerHTML = '<span style="color: #fbbf24;">⚠ STATUS: AWAITING_TOOLS (External Provider Configuration Required)</span>';
+                } else if (data.status === "failed") {
+                    badge.innerHTML = '<span style="color: #f87171;">✕ STATUS: FAILED (Capability Unauthorized or Execution Error)</span>';
+                } else {
+                    badge.innerHTML = `<span style="color: #cbd5e1;">STATUS: ${data.status || 'UNKNOWN'}</span>`;
+                }
+
                 document.getElementById("execution-output").innerText = JSON.stringify(data, null, 2);
             } catch (e) {
+                badge.innerHTML = '<span style="color: #f87171;">✕ STATUS: NETWORK ERROR</span>';
                 document.getElementById("execution-output").innerText = `Execution Error: ${e.message}`;
             }
         }
