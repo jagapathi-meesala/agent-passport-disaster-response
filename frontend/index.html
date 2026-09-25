@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agent Passport – Disaster Response Agent Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0b1329;
+            --card-bg: #162238;
+            --card-border: #233554;
+            --accent-color: #38bdf8;
+            --accent-green: #34d399;
+            --accent-red: #f87171;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --code-bg: #090d16;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            margin: 0;
+            padding: 1.5rem;
+        }
+
+        .header {
+            max-width: 1200px;
+            margin: 0 auto 1.5rem auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 1.6rem;
+            color: var(--accent-color);
+        }
+
+        .status-badge {
+            background: #0284c7;
+            color: #ffffff;
+            padding: 0.35rem 0.85rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .grid-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 900px) {
+            .grid-container { grid-template-columns: 1fr; }
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4);
+        }
+
+        .card h2 {
+            margin-top: 0;
+            font-size: 1.2rem;
+            color: var(--accent-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        label {
+            display: block;
+            margin-top: 0.75rem;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        input[type="text"], select, textarea {
+            width: 100%;
+            padding: 0.6rem;
+            margin-top: 0.35rem;
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-family: inherit;
+        }
+
+        button {
+            background: var(--accent-color);
+            color: #0f172a;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            border-radius: 0.375rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: opacity 0.2s ease;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        .btn-green { background: var(--accent-green); }
+        .btn-purple { background: #c084fc; color: #1e1b4b; }
+
+        pre {
+            background: var(--code-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 0.375rem;
+            padding: 1rem;
+            overflow-x: auto;
+            max-height: 380px;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+        }
+
+        .badge-success { color: var(--accent-green); font-weight: 600; }
+        .badge-fail { color: var(--accent-red); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div>
+            <h1>DisasterResponseAgent Monitor</h1>
+            <span style="color: var(--text-secondary); font-size: 0.9rem;">Portable Framework-Agnostic Agent Dashboard</span>
+        </div>
+        <span id="api-status" class="status-badge">API: Initializing...</span>
+    </div>
+
+    <div class="grid-container">
+
+        <!-- Column 1: Passport & Tools -->
+        <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h2>
+                    <span>Agent Passport Specification</span>
+                    <button onclick="fetchPassport()" style="margin: 0; padding: 0.3rem 0.7rem; font-size: 0.8rem;">Refresh</button>
+                </h2>
+                <pre id="passport-output">Loading passport metadata...</pre>
+            </div>
+
+            <div class="card">
+                <h2>
+                    <span>Registered ToolRegistry</span>
+                    <button onclick="fetchTools()" style="margin: 0; padding: 0.3rem 0.7rem; font-size: 0.8rem;">Refresh</button>
+                </h2>
+                <pre id="tools-output">Loading registered tools...</pre>
+            </div>
+        </div>
+
+        <!-- Column 2: Execution & Verification -->
+        <div>
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h2>Task Execution Pipeline</h2>
+                
+                <label for="adapter-select">Execution Entry Point (Adapter):</label>
+                <select id="adapter-select">
+                    <option value="direct_core">Direct Core (AgentCore.process_request)</option>
+                    <option value="portable">PortableAdapter (Generic Dict Payload)</option>
+                    <option value="langchain">LangChainAdapter (LangChain Payload)</option>
+                </select>
+
+                <label for="input-text">User Instruction / Task Prompt:</label>
+                <input type="text" id="input-text" value="Evaluate weather conditions and risks">
+
+                <label for="capability-select">Requested Capability:</label>
+                <select id="capability-select">
+                    <option value="weather_monitoring">weather_monitoring</option>
+                    <option value="resource_location">resource_location</option>
+                    <option value="situational_assessment">situational_assessment</option>
+                    <option value="logistics_coordination">logistics_coordination</option>
+                    <option value="unauthorized_cyber_attack">unauthorized_cyber_attack (Test Rejection)</option>
+                </select>
+
+                <button onclick="executeTask()">Run Task Execution</button>
+
+                <pre id="execution-output" style="margin-top: 1rem;">Execution response will appear here...</pre>
+            </div>
+
+            <div class="card">
+                <h2>Automated Verification Engines</h2>
+                <p style="color: var(--text-secondary); font-size: 0.85rem; margin-top: 0;">
+                    Execute system verifiers to generate machine-readable JSON evidence.
+                </p>
+                
+                <div style="display: flex; gap: 0.75rem;">
+                    <button class="btn-green" onclick="runTrustVerification()">Run Passport Trust Verifier</button>
+                    <button class="btn-purple" onclick="runPortabilityVerification()">Run Portability Verifier</button>
+                </div>
+
+                <pre id="verification-output" style="margin-top: 1rem;">Verification results will appear here...</pre>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = "http://localhost:8000";
+
+        async function checkHealth() {
+            try {
+                const res = await fetch(`${API_BASE}/health`);
+                if (res.ok) {
+                    document.getElementById("api-status").innerText = "API: Online";
+                    document.getElementById("api-status").style.background = "#059669";
+                }
+            } catch (e) {
+                document.getElementById("api-status").innerText = "API: Standby / Offline";
+                document.getElementById("api-status").style.background = "#dc2626";
+            }
+        }
+
+        async function fetchPassport() {
+            try {
+                const res = await fetch(`${API_BASE}/passport`);
+                const data = await res.json();
+                document.getElementById("passport-output").innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById("passport-output").innerText = "Failed to fetch passport metadata.";
+            }
+        }
+
+        async function fetchTools() {
+            try {
+                const res = await fetch(`${API_BASE}/tools`);
+                const data = await res.json();
+                document.getElementById("tools-output").innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById("tools-output").innerText = "Failed to fetch tool registry listing.";
+            }
+        }
+
+        async function executeTask() {
+            const adapter = document.getElementById("adapter-select").value;
+            const input = document.getElementById("input-text").value;
+            const capability = document.getElementById("capability-select").value;
+
+            document.getElementById("execution-output").innerText = "Processing task execution...";
+
+            const payload = {
+                user_input: input,
+                adapter_type: adapter,
+                context: { location: { latitude: 15.5, longitude: 75.5 } },
+                requested_capabilities: [capability]
+            };
+
+            try {
+                const res = await fetch(`${API_BASE}/execute`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                document.getElementById("execution-output").innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById("execution-output").innerText = `Execution Error: ${e.message}`;
+            }
+        }
+
+        async function runTrustVerification() {
+            document.getElementById("verification-output").innerText = "Running Passport Trust Verifier...";
+            try {
+                const res = await fetch(`${API_BASE}/verify/trust`, { method: "POST" });
+                const data = await res.json();
+                document.getElementById("verification-output").innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById("verification-output").innerText = `Trust Verification Error: ${e.message}`;
+            }
+        }
+
+        async function runPortabilityVerification() {
+            document.getElementById("verification-output").innerText = "Running Portability Verifier...";
+            try {
+                const res = await fetch(`${API_BASE}/verify/portability`, { method: "POST" });
+                const data = await res.json();
+                document.getElementById("verification-output").innerText = JSON.stringify(data, null, 2);
+            } catch (e) {
+                document.getElementById("verification-output").innerText = `Portability Verification Error: ${e.message}`;
+            }
+        }
+
+        // Initial Load
+        window.onload = () => {
+            checkHealth();
+            fetchPassport();
+            fetchTools();
+        };
+    </script>
+</body>
+</html>
