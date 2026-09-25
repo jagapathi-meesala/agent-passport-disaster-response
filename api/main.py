@@ -7,6 +7,7 @@ registered tools, multi-adapter execution, and automated verification suites.
 
 from typing import Any, Dict, List, Optional
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from config.settings import get_settings
@@ -26,6 +27,24 @@ app = FastAPI(
     title="Agent Passport – Disaster Response Agent API",
     description="REST API for portable disaster response agent lifecycle, tool registry, multi-adapter execution, and verification.",
     version="1.0.0",
+)
+
+# Configure CORS middleware for local development origins (including file:// and dev servers)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:8001",
+        "http://127.0.0.1:8001",
+        "http://localhost:5500",
+        "http://127.0.0.1:5500",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "null",
+        "*"
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Initialize application components
