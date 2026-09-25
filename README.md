@@ -73,6 +73,6 @@ Run the complete test suite (175 tests):
 ### 3. Running the REST API & Demo Dashboard
 Start the API server:
 ```bash
-.venv/bin/uvicorn api.main:app --reload --port 8000
+.venv/bin/uvicorn api.main:app --reload --port 8001
 ```
 Open `frontend/index.html` in any web browser to interact with the Live Demo Dashboard.
