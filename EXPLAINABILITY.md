@@ -6,41 +6,31 @@ This repository contains a portable disaster-response agent designed to provide 
 
 The agent uses a framework-independent execution core and separates agent identity, behavior contracts, capabilities, tools, adapters, verification, and runtime configuration.
 
-The agent is designed to be inspectable, reproducible, and portable across supported execution adapters.
+The design allows the agent to be inspected, tested, verified, and executed through supported adapters without making the core dependent on a single AI framework.
 
 ---
 
 ## 1. Agent Identity
 
-Agent name: DisasterResponseAgent
+The agent is identified as `DisasterResponseAgent` through the repository's passport and agent manifest configuration.
 
-Agent manifest: `agent.yaml`
+The agent manifest is defined in `agent.yaml`, while the passport definition is stored in `config/passport.json`.
 
-Agent identity and behavioral principles: `SOUL.md`
+The agent's identity and behavioral principles are also documented in `SOUL.md`.
 
-Passport definition: `config/passport.json`
-
-The OpenGAP-compatible manifest provides the portable agent identity metadata.
-
-The passport provides the declared capabilities, supported input/output types, authorized tools, and contract version.
+The passport declares the agent's capabilities, supported input and output types, authorized tools, and behavior contract version.
 
 ---
 
 ## 2. Agent Purpose
 
-The purpose of the agent is to support disaster-response workflows using structured, verifiable execution.
+The purpose of the agent is to support disaster-response workflows using structured and verifiable execution.
 
-The agent supports the following declared capabilities:
+The agent is designed to assist with situational assessment, logistics coordination, resource allocation, weather monitoring, and resource location.
 
-- situational_assessment
-- logistics_coordination
-- resource_allocation
-- weather_monitoring
-- resource_location
+The agent does not assume that every requested operation is authorized.
 
-The agent must operate only within the capabilities declared by its passport.
-
-It must not claim successful execution of capabilities that are not declared or authorized.
+Only capabilities and tools declared and authorized by the loaded passport can be executed.
 
 ---
 
@@ -48,78 +38,69 @@ It must not claim successful execution of capabilities that are not declared or 
 
 The framework-independent request contract accepts structured agent requests.
 
-A request may contain:
+An input request can contain a request identifier, user input, optional context, and requested capabilities.
 
-- request identifier
-- user input
-- optional context
-- requested capabilities
+The input data is validated before capability selection or tool execution begins.
 
-Input is validated before capability or tool execution begins.
+Invalid or incomplete requests are rejected rather than being executed as valid operations.
 
-Invalid requests are rejected instead of being executed.
+The agent does not require a fixed disaster location, fixed dataset, fixed city, fixed resource count, or fixed external provider in the core execution logic.
+
+Runtime provider configuration is supplied through the environment and external configuration rather than being embedded in the agent behavior.
 
 ---
 
 ## 4. Outputs
 
-The agent produces a structured response.
+The agent produces a structured response describing the result of the requested execution.
 
-The response can communicate:
+The response can contain the request identifier, execution status, result data, selected capabilities, selected tools, execution metadata, and structured errors.
 
-- request identifier
-- execution status
-- result
-- selected capabilities
-- selected tools
-- execution metadata
-- structured errors
+The execution status communicates whether the request completed successfully, failed, or is waiting for required external tool configuration.
 
-Possible execution outcomes include successful completion, failure, or waiting for required external tool configuration.
-
-The response therefore allows a consumer to determine what was requested, what was authorized, what tools were involved, and whether execution completed.
+This allows a consumer to determine what was requested, what was authorized, which tools were selected, and whether execution completed.
 
 ---
 
 ## 5. Decision-Making Process
 
-The agent does not authorize an operation solely because it was requested by the user.
+The agent does not authorize an operation solely because that operation was requested by the user.
 
-Authorization is determined from the loaded passport and tool contracts.
+The decision process uses the loaded passport, declared capabilities, tool contracts, authorization rules, and runtime availability.
 
-The decision process is:
+The decision-making sequence is:
 
 ```text
 Request
    |
    v
-Validate request
+Validate Request
    |
    v
-Load passport
+Load Passport
    |
    v
-Validate requested capability
+Validate Requested Capability
    |
-   +---- unsupported ----> Reject request
-   |
-   v
-Discover tool
+   +---- Unsupported Capability ----> Reject Request
    |
    v
-Check tool availability
+Discover Tool
    |
    v
-Check passport authorization
+Check Tool Availability
    |
    v
-Validate tool input
+Check Passport Authorization
    |
    v
-Execute tool
+Validate Tool Input
    |
    v
-Validate tool output
+Execute Tool
    |
    v
-Generate structured response
+Validate Tool Output
+   |
+   v
+Generate Structured Response
