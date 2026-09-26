@@ -1,0 +1,7 @@
+spec_version: "0.1.0"
+
+name: disaster-response-agent
+
+version: 1.0.0
+
+description: Portable disaster response AI agent with framework-independent execution, dynamic tool integration, agent identity, behavior contracts, and portability verification.
