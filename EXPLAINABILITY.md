@@ -107,7 +107,7 @@ Generate Structured Response
 
 ---
 
-## Limits
+## Limitations and Constraints
 
 The agent has limitations and external dependencies that can affect execution.
 
